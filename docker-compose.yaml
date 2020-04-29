@@ -1,0 +1,56 @@
+version: '3.4'
+services:
+  ##############################################################################
+  ## 0: WEB SERVER
+  ##############################################################################
+  webserver:
+    container_name: hmr-http
+    restart: always
+    build:
+      context: ./nginx
+      args:
+        conf: prod.conf
+    ports:
+      - "80:80"
+      - "443:443"
+    links:
+      - hmr-libreria
+      - hmr-api
+  ##############################################################################
+  ## 1: WEB APPS
+  ##############################################################################
+  hmr-libreria:
+    container_name: hmr-libreria
+    env_file: ./env/libreria.env
+    image: registry.gitlab.com/hansel-m-rojas/libreria/libreria-pwa
+    restart: always
+    expose:
+     - 4000
+  ##############################################################################
+  ## 2: APIs
+  ##############################################################################
+  hmr-api:
+    container_name: hmr-api
+    env_file: ./env/api.env
+    image: registry.gitlab.com/hansel-m-rojas/libreria/libreria-api
+    restart: always
+    expose:
+     - 3000
+    links:
+      - mongo
+  ##############################################################################
+  ## 3: DATABASES
+  ##############################################################################
+  mongo:
+    container_name: hmr-mongo
+    restart: always
+    image: mongo:latest
+    ports:
+      - 127.0.0.1:27017:27017
+    volumes:
+      - mongo_data:/data/db
+################################################################################
+## 4: VOLUMES
+################################################################################
+volumes:
+  mongo_data:
